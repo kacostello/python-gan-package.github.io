@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="canonical" href="http://127.0.0.1:8000/SuperTrainer.py/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>SuperTrainer - Python GAN Package</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "SuperTrainer";
+    var mkdocs_page_input_path = "SuperTrainer.py.md";
+    var mkdocs_page_url = "/SuperTrainer.py/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Python GAN Package</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../about/">About</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../data_input/">Data Input</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../features/">Key User Features</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">SuperTrainer</a>
+    <ul class="current">
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../SimpleGANTrainer.py/">SimpleGANTrainer</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../WassersteinGANTrainer.py/">WassersteinGANTrainer</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Python GAN Package</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>SuperTrainer</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="about-supertrainerpy">About SuperTrainer.py</h2>
+<p>SuperTrainer has these attributes:</p>
+<ul>
+<li>ToTrain: ToTrain object, which determines which model gets trained on a given epoch. Can be as simple or complex as needed, and can be fed whatever input makes sense for the specific type of GAN. ToTrain objects all have a .next(trainer) function, which takes as an argument the trainer object and returns the string representation of the next model to train.</li>
+<li>Model names: Not explicitly stored, these are the strings used to refer to each model in each dictionary. in the SimpleGAN implementation, these are "D" and "G" for the discriminator and generator respectively.</li>
+<li>Models: Dictionary of the form {model name: pytorch model}. In the SimpleGAN implementation, this is {"D":discriminator, "G":generator}</li>
+<li>in_functions: Dictionary of the functions which returns the data to be fed into a model, and the labels for that data. Each function takes in whatever it needs to generate this information, and outputs [model_in, true]. In the SimpleGAN implementation, this is {"D":discriminator_input, "G":generator_input}. In the SimpleGAN implementation, both in_functions return data to be fed into the discriminator.<ul>
+<li>Example: generator_input takes in batch size, generator model object, and the latent space function. It creates a batch of the latent space, and feeds this batch to the generator. The generator wants to always fool the discriminator, so the labels are all 1. The function then returns [generator_out, labels]. After calling this function, the training loop feeds generator_out to the discriminator, and then feeds (discriminator_out, labels) to the generator's loss function. By default, the label for fake data is 0 and real data is 1.</li>
+</ul>
+</li>
+<li>loss_functions: Dictionary of the PyTorch loss functions. These functions take in the (model_output, labels) pair, and returns the PyTorch object used for model training.</li>
+<li>opts: Dictionary of the PyTorch optimizers for each model. These are the optimizer objects used for training with PyTorch.</li>
+<li>SuperTrainer's Stats Dictionary: The stats dictionary mapping names of statistics with dictionaries containing those statistics. It is of the format {stat_name:stat_dict}</li>
+<li>losses: Dictionary of the record of the numerical loss values over every training epoch. After training is complete, it should be of the structure {model_name:[loss_epoch_0, loss_epoch_1, ..., loss_epoch_n]}. Used for the loss_by_epoch visualization.</li>
+<li>epochs_trained: Dictionary of the number of epochs each model has been trained. After training is complete, it should be of the structure {model_name:epochs_model_trained}<pre><code># Training loop process for Simple GAN:
+
+for each epoch:
+    x = self.totrain.next(self)  # x = "G" or "D", following a 2:5 rule
+    if x == "G":
+        dis_in, labels = in_functions[x](batch_size, generator, latent_space_function)  # generator_input()
+    else:
+        dis_in, labels = in_functions[x](batch_size, generator, latent_space_function, from_dataset_function)  # discriminator_input() 
+    predicted = models["D"](dis_in)
+    loss = loss_functions[x](predicted, labels)  # g_loss() or d_loss()
+    # add numerical loss to losses[x]
+
+    opts[x].zero_grad()  # g_opt or d_opt.zero_grad()
+    loss.backward()
+        self.opts[x].step()
+</code></pre>
+</li>
+</ul>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../SimpleGANTrainer.py/" class="btn btn-neutral float-right" title="SimpleGANTrainer">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../features/" class="btn btn-neutral" title="Key User Features"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../features/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../SimpleGANTrainer.py/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

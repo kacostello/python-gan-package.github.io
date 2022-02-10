@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="canonical" href="http://127.0.0.1:8000/SimpleGANTrainer.py/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>SimpleGANTrainer - Python GAN Package</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "SimpleGANTrainer";
+    var mkdocs_page_input_path = "SimpleGANTrainer.py.md";
+    var mkdocs_page_url = "/SimpleGANTrainer.py/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Python GAN Package</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../about/">About</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../data_input/">Data Input</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../features/">Key User Features</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../SuperTrainer.py/">SuperTrainer</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">SimpleGANTrainer</a>
+    <ul class="current">
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../WassersteinGANTrainer.py/">WassersteinGANTrainer</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Python GAN Package</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>SimpleGANTrainer</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="about-simplegantrainerpy">About SimpleGANTrainer.py</h2>
+<p>SimpleGANTrainer is an object designed to train, store, and evaluate simple GANs. That is to say, any GAN with one generator and one discriminator where the generator is directly trained from the output from the discriminator.
+The Trainer object is designed to be able to train any GAN which meets this description, and automatically keep track of selected metrics during training so as to easily review the training process.
+This tutorial will show how to create and train a simple GAN using the Trainer object, and will go over some ways to use the Trainer object’s functionality in more advanced ways.</p>
+<h2 id="setup">Setup</h2>
+<p>The Trainer object requires some setup before it can be created. In particular, it requires:</p>
+<ul>
+<li>Two pytorch models (the generator and the discriminator)</li>
+<li>The optimizer and loss function for each model</li>
+<li>A function to draw from the latent space</li>
+<li>A function to draw from the real data</li>
+<li>The device on which to train the models</li>
+<li>Optionally, the Trainer object can also take:</li>
+<li>A ToTrain object</li>
+<li>The desired positive result threshold for the discriminator, used for calculating certain metrics</li>
+</ul>
+<h2 id="designing-the-gan">Designing the GAN</h2>
+<p>Before we can train a GAN, we need to know what we want the GAN to do. For this tutorial, we will create an extremely simple GAN - the generator will generate 7-bit even binary numbers, and the discriminator will distinguish between even and odd 7-bit binary numbers.</p>
+<h2 id="models">Models</h2>
+<p>The simplest possible generator which meets our requirements is a single layer consisting of 7 inputs and outputs and with a Sigmoid activation. This model is defined as follows:\</p>
+<pre><code># Generator
+class Generator(nn.Module):
+
+    def __init__(self):
+        super(Generator, self).__init__()
+        self.dense_layer = nn.Linear(7, 7)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        return self.activation(self.dense_layer(x))
+</code></pre>
+<p>Our discriminator is similarly simple. It consists of a single layer with 7 inputs and 1 output, again with a Sigmoid activation. It is defined as follows:</p>
+<pre><code># Discriminator
+class Discriminator(nn.Module):
+
+    def __init__(self):
+            super(Discriminator, self).__init__()
+            self.dense = nn.Linear(7, 1)
+            self.activation = nn.Sigmoid()
+
+        def forward(self, x):
+            return self.activation(self.dense(x))
+</code></pre>
+<p>Finally, we create the model objects:</p>
+<pre><code># Model objects
+gen = Generator()
+dis = Discriminator()
+</code></pre>
+<p>The Trainer object stores the models in its models dictionary. Specifically, the models dictionary is of the form: {“G”:generator, “D”:discriminator}. The models are kept in training mode normally, though the discriminator is set to eval mode while training the generator, and the eval(model, in_dat) function sets the specified model to eval mode before evaluating, and returns it to train mode afterwards.</p>
+<h2 id="optimizers-and-loss-functions">Optimizers and Loss Functions</h2>
+<p>For our GAN we simply use built-in optimizers and loss functions:</p>
+<pre><code># built-in optimizers and loss functions:
+gen_opt = torch.optim.Adam(gen.parameters(), lr=0.001)
+dis_opt = torch.optim.Adam(dis.parameters(), lr=0.001)
+
+gen_loss = nn.BCELoss()
+dis_loss = nn.BCELoss()
+</code></pre>
+<p>However, any optimizers and loss functions which work in a pytorch training loop, including custom objects, work perfectly fine with the Trainer object.</p>
+<h2 id="latent-space-and-dataset-functions">Latent Space and Dataset Functions</h2>
+<p>We now need functions to draw from the latent space and dataset. The latent space is the parameter space from which the generator draws. For our GAN, this is just a simple random tensor of size 7:</p>
+<pre><code># random tensor of size 7
+def lat_space(batch_size, dev):
+        return torch.randint(0, 2, size=(batch_size, 7), device=dev).float()
+</code></pre>
+<p>The dataset function is a function designed to return a batch of real data. Real data for us is just an even number, so it’s easier to generate data than retrieve it from a database.</p>
+<pre><code># dataset function
+def batch_from_data(batch_size, dev):
+        max_int = 128
+        # Get the number of binary places needed to represent the maximum number
+        max_length = int(math.log(max_int, 2))
+
+        # Sample batch_size number of integers in range 0-max_int
+        sampled_integers = np.random.randint(0, int(max_int / 2), batch_size)
+
+        # create a list of labels all ones because all numbers are even
+        labels = [1] * batch_size
+
+        # Generate a list of binary numbers for training.
+        data = [list_from_num(int(x * 2)) for x in sampled_integers]
+        data = [([0] * (max_length - len(x))) + x for x in data]
+
+        return torch.tensor(data, device=dev).float()
+</code></pre>
+<p>Both the latent space and dataset functions take the parameters (batch_size, device). The batch_size parameter determines the size of the batch, and the device parameter is the device on which the tensors are created.
+The functions must output a tensor of the shape (batch_size, input_size) - the outputs of the latent space and dataset functions are passed directly into the generator and discriminator respectively.</p>
+<h1 id="device">Device</h1>
+<p>The Trainer object supports training on any device visible to PyTorch. We want to train on the GPU, so we use:</p>
+<pre><code>    # train on GPU
+    GAN_DEVICE = "cuda"
+</code></pre>
+<p>If we do not have a GPU, we would use:</p>
+<pre><code>    # train without GPU
+    GAN_DEVICE = "cpu"
+</code></pre>
+<h2 id="totrain-object">ToTrain Object</h2>
+<p>ToTrain objects are objects designed to determine which model to train during the training process. The package comes with a number of built-in ToTrain objects, and they are designed to be as easy as possible to build your own custom ToTrain object.
+Our GAN just uses the Two-Five Rule ToTrain object, which trains the generator for two epochs then trains the discriminator for five epochs.</p>
+<h2 id="discriminator-positive-threshold">Discriminator Positive Threshold</h2>
+<p>The Trainer object allows the user to specify the threshold above which output from the discriminator is considered to be positive. This only impacts calculation of certain metrics (precision, recall, and false positive rate specifically), and does not affect training.
+By default, this parameter is set to 0.5 if not specified. This is fine for our purposes, and so we do not set this parameter.</p>
+<h2 id="creating-the-trainer-object">Creating the Trainer Object</h2>
+<p>All that is left to do is to create the trainer object. This is done by:</p>
+<pre><code>    # trainer object creation
+    gan = SimpleGANTrainer(gen, dis, lat_space, batch_from_data, gen_loss, dis_loss, gen_opt, dis_opt, device, sw)
+</code></pre>
+<h2 id="training-the-gan">Training the GAN</h2>
+<p>With our Trainer object created, we can now train it at will. To train a GAN, call the .train(epochs, batch_size) function:</p>
+<pre><code>    # call to train GAN
+    gan.train(7000, 16)
+</code></pre>
+<p>This will train the generator and discriminator according to the ToTrain object we specified. With the Two-Five Rule ToTrain object, this trains the generator for a total of 2,000 epochs and the discriminator for a total of 5,000 epochs.
+Trainer objects can train for any length of time, across any number of different invocations of the .train() function. The function is blocking, though, so if we want to see output in the middle of training we must call the .train() function multiple times:
+[TODO: make these into screenshots of code]
+gan.train(2000, 16)
+gan.loss_by_epoch(“G”)  # Graphs the generator’s loss for the first 2000 epochs
+gan.train(5000, 16)
+The state of the ToTrain object is preserved across multiple calls to .train(), so 
+gan.train(2, 16)
+gan.train(5, 16)
+is equivalent to
+gan.train(7, 16)</p>
+<h2 id="evaluating-the-models">Evaluating the Models</h2>
+<p>The model objects can be directly accessed through the models dictionary. The Trainer object also has the .eval(model, in_dat) function, or the .eval_generator(in_dat) and .eval_discriminator(in_dat) functions (which just call self.eval(“G”, in_dat) and self.eval(“D”, in_dat) respectively).
+To see output from the trained generator:</p>
+<pre><code>    # output from trained generator
+    print(gan.eval_generator(lat_space(16, device)))
+</code></pre>
+<h2 id="evaluating-on-a-different-device">Evaluating on a Different Device</h2>
+<p>The Trainer object supports moving the models to different devices, so it’s possible to use Trainer objects to train and evaluate models on different devices. Use the .models_to(new_device) function to send all models to the specified device.
+To train the models on the GPU and evaluate on the CPU, for instance, we would:</p>
+<pre><code>    # evaluate on different device
+    GAN_DEVICE = "cuda"
+    gan = SimpleGANTrainer(gen, dis, lat_space, batch_from_data, gen_loss, dis_loss, gen_opt, dis_opt, device, sw)
+    gan.train(7000, 16)
+    print(gan.eval_generator(lat_space(16, device)))
+    gan.loss_by_epoch_d()
+</code></pre>
+<h2 id="visualizing-training">Visualizing Training</h2>
+<h2 id="loss-by-epoch">Loss by Epoch</h2>
+<p>Trainer objects save certain metrics of data in order to allow the user to see how the models are performing. These visualizers include: 
+sw = TwoFiveRule()</p>
+<h2 id="divergence-by-epoch">Divergence by Epoch</h2>
+<p>Shows a graph of the Wasserstein distance of the generator per epoch. Called with .divergence_by_epoch()</p>
+<h2 id="epochs-trained">Epochs Trained</h2>
+<p>Returns the total number of epochs which the specified model was trained. Called with .epochs_trained(model)</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../WassersteinGANTrainer.py/" class="btn btn-neutral float-right" title="WassersteinGANTrainer">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../SuperTrainer.py/" class="btn btn-neutral" title="SuperTrainer"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../SuperTrainer.py/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../WassersteinGANTrainer.py/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
